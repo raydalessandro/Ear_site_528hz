@@ -99,12 +99,12 @@
         }
         
         .nav-links {
-            display: none; /* Nascosti - scarsità anche nella navigazione */
-        }
+        display: flex;
+                gap: 20px;
+                align-items: center;}
         
         .availability-status {
-            padding: 8px 16px;
-            border: 1px solid var(--accent);
+    border: 1px solid var(--accent);
             border-radius: 20px;
             font-size: 12px;
             text-transform: uppercase;
@@ -436,13 +436,20 @@
     
     <!-- Navigation Minimal -->
     <nav>
-        <a href="/" class="logo">
+        <a href="index.html" class="logo">
             <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
                 <path d="M16 16 Q16 14, 14 14 T10 14 Q10 18, 14 18 T22 18 Q22 10, 14 10 T6 10 Q6 22, 18 22 T30 22 Q30 6, 14 6" 
                       stroke="#d4af37" stroke-width="1.5" fill="none" opacity="0.8"/>
-            </svg>
+            </svgh
             <span class="logo-text">EAR</span>
         </a>
+
+                <!-- Navigation Links -->
+                <div class="nav-links" style="display: flex; gap: 20px; align-items: center;">
+                                <a href="manifesto.html" style="color: var(--accent); text-decoration: none; font-size: 14px; letter-spacing: 0.05em; text-transform: uppercase;">MANIFESTO</a>a>
+                                <a href="calendario.html" style="color: var(--accent); text-decoration: none; font-size: 14px; letter-spacing: 0.05em; text-transform: uppercase;">CALENDARIO</a>a>
+                                <a href="test.html" style="color: var(--accent); text-decoration: none; font-size: 14px; letter-spacing: 0.05em; text-transform: uppercase;">TEST</a>a>
+                </div>div>
         
         <div class="availability-status" id="availabilityStatus">
             OFFLINE
@@ -557,7 +564,7 @@
             INIZIA IL TEST DI RISONANZA
         </a>
         <div class="next-available">
-            Prossima disponibilità: Settembre 2025
+            Prossitest.htmlsponibilità: Settembre 2025
             <div class="countdown" id="countdown">
                 245 giorni : 14 ore : 32 minuti
             </div>
