@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test di Risonanza - Vibri sopra 528 Hz?</title>
+    <meta name="description" content="Non tutti possono lavorare con noi. Scopri se vibri alla frequenza giusta.">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --black: #0a0a0a;
+            --white: #fafafa;
+            --accent: #d4af37;
+            --red: #ff4444;
+            --green: #00ff88;
+            --phi: 1.618;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--black);
+            color: var(--white);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Test Container */
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 80px 20px 40px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        /* Frequency Meter */
+        .frequency-meter {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 60px;
+            position: relative;
+        }
+        
+        .meter-circle {
+            width: 100%;
+            height: 100%;
+            border: 2px solid rgba(212, 175, 55, 0.2);
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .meter-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(180deg, var(--accent) 0%, var(--green) 100%);
+            transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0.8;
+        }
+        
+        .frequency-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        
+        .hz-value {
+            font-size: 48px;
+            font-weight: 100;
+            letter-spacing: -0.02em;
+        }
+        
+        .hz-label {
+            font-size: 14px;
+            opacity: 0.5;
+            letter-spacing: 0.1em;
+        }
+        
+        /* Questions */
+        .question-container {
+            margin-bottom: 60px;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: emerge 0.8s ease-out forwards;
+        }
+        
+        @keyframes emerge {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .question-number {
+            font-size: 12px;
+            color: var(--accent);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+        
+        .question-text {
+            font-size: 24px;
+            font-weight: 300;
+            line-height: 1.4;
+            margin-bottom: 32px;
+        }
+        
+        /* Response Options */
+        .response-grid {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .response-option {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .response-option:hover {
+            border-color: var(--accent);
+            background: rgba(212, 175, 55, 0.05);
+            transform: translateX(8px);
+        }
+        
+        .response-option.selected {
+            background: var(--accent);
+            color: var(--black);
+            border-color: var(--accent);
+        }
+        
+        .frequency-impact {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .response-option:hover .frequency-impact {
+            opacity: 0.5;
+        }
+        
+        .frequency-impact.positive {
+            color: var(--green);
+        }
+        
+        .frequency-impact.negative {
+            color: var(--red);
+        }
+        
+        /* Result Screen */
+        .result-container {
+            text-align: center;
+            padding: 60px 20px;
+            display: none;
+        }
+        
+        .result-container.show {
+            display: block;
+            animation: emerge 1s ease-out;
+        }
+        
+        .result-title {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            letter-spacing: -0.02em;
+        }
+        
+        .result-title.approved {
+            color: var(--green);
+        }
+        
+        .result-title.rejected {
+            color: var(--red);
+        }
+        
+        .result-frequency {
+            font-size: 72px;
+            font-weight: 100;
+            color: var(--accent);
+            margin: 40px 0;
+        }
+        
+        .result-message {
+            font-size: 18px;
+            line-height: 1.6;
+            opacity: 0.8;
+            max-width: 400px;
+            margin: 0 auto 40px;
+        }
+        
+        .result-action {
+            display: inline-block;
+            padding: 16px 32px;
+            background: var(--accent);
+            color: var(--black);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .result-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+        }
+        
+        .result-action.rejected {
+            background: var(--red);
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        
+        /* Progress Indicator */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(212, 175, 55, 0.1);
+            z-index: 100;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Navigation */
+        .test-nav {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+        }
+        
+        .back-button {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 14px;
+            opacity: 0.5;
+            transition: opacity 0.3s ease;
+        }
+        
+        .back-button:hover {
+            opacity: 1;
+        }
+        
+        /* Timer */
+        .timer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: var(--accent);
+            opacity: 0.5;
+        }
+        
+        /* Hidden Phase */
+        .hidden-question {
+            display: none;
+            padding: 40px;
+            background: rgba(212, 175, 55, 0.05);
+            border: 1px solid var(--accent);
+            margin-top: 40px;
+        }
+        
+        .hidden-question.show {
+            display: block;
+            animation: emerge 1s ease-out;
+        }
+        
+        .unlock-text {
+            font-size: 12px;
+            color: var(--accent);
+            text-align: center;
+            margin-top: 40px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .unlock-text.show {
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <!-- Progress Bar -->
+    <div class="progress-bar">
+        <div class="progress-fill" id="progress"></div>
+    </div>
+    
+    <!-- Navigation -->
+    <div class="test-nav">
+        <a href="/" class="back-button">← Abbandona</a>
+    </div>
+    
+    <!-- Timer -->
+    <div class="timer" id="timer">00:00</div>
+    
+    <!-- Test Container -->
+    <div class="test-container" id="testContainer">
+        <!-- Frequency Meter -->
+        <div class="frequency-meter">
+            <div class="meter-circle">
+                <div class="meter-fill" id="meterFill" style="height: 0%"></div>
+                <div class="frequency-display">
+                    <div class="hz-value" id="hzValue">0</div>
+                    <div class="hz-label">Hz</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Question 1 -->
+        <div class="question-container" id="q1">
+            <div class="question-number">Domanda 1/5</div>
+            <div class="question-text">
+                Il tuo progetto ideale dura:
+            </div>
+            <div class="response-grid">
+                <div class="response-option" data-hz="100">
+                    Il meno possibile. Voglio tutto subito.
+                    <span class="frequency-impact negative">-200 Hz</span>
+                </div>
+                <div class="response-option" data-hz="300">
+                    2-3 settimane. Tempo standard.
+                    <span class="frequency-impact">+100 Hz</span>
+                </div>
+                <div class="response-option" data-hz="500">
+                    Il tempo che serve. La fretta è nemica della qualità.
+                    <span class="frequency-impact positive">+300 Hz</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Hidden unlock text -->
+        <div class="unlock-text" id="unlockText">
+            Premi 432 per sbloccare la vera frequenza...
+        </div>
+    </div>
+    
+    <!-- Result Container -->
+    <div class="result-container" id="resultContainer">
+        <!-- Filled dynamically -->
+    </div>
+    
+    <script>
+        // Test State
+        let currentQuestion = 1;
+        let totalQuestions = 5;
+        let currentFrequency = 0;
+        let startTime = Date.now();
+        let answers = [];
+        
+        // Questions Data
+        const questions = [
+            {
+                id: 'q1',
+                text: 'Il tuo progetto ideale dura:',
+                options: [
+                    { text: 'Il meno possibile. Voglio tutto subito.', hz: 100, impact: -200 },
+                    { text: '2-3 settimane. Tempo standard.', hz: 300, impact: 100 },
+                    { text: 'Il tempo che serve. La fretta è nemica della qualità.', hz: 500, impact: 300 }
+                ]
+            },
+            {
+                id: 'q2',
+                text: 'Quanti competitor hai analizzato?',
+                options: [
+                    { text: 'Tutti. Devo vedere cosa fanno gli altri.', hz: 200, impact: -100 },
+                    { text: 'I principali. Per capire il mercato.', hz: 400, impact: 200 },
+                    { text: 'Nessuno. Non sono loro.', hz: 600, impact: 400 }
+                ]
+            },
+            {
+                id: 'q3',
+                text: 'Il tuo budget è:',
+                options: [
+                    { text: 'Il minimo possibile.', hz: 50, impact: -300 },
+                    { text: 'Proporzionato al valore.', hz: 432, impact: 332 },
+                    { text: 'Non è il punto. Il valore non ha prezzo.', hz: 700, impact: 500 }
+                ]
+            },
+            {
+                id: 'q4',
+                text: 'Preferisci:',
+                options: [
+                    { text: 'Tante funzionalità.', hz: 250, impact: -50 },
+                    { text: 'Le funzionalità giuste.', hz: 450, impact: 250 },
+                    { text: 'Solo l\'essenziale. Perfetto.', hz: 650, impact: 450 }
+                ]
+            },
+            {
+                id: 'q5',
+                text: 'Il successo per te è:',
+                options: [
+                    { text: 'Più clienti possibile.', hz: 150, impact: -150 },
+                    { text: 'I clienti giusti.', hz: 528, impact: 428 },
+                    { text: 'Un cliente all\'anno che ti cambia la vita.', hz: 800, impact: 600 }
+                ]
+            }
+        ];
+        
+        // Secret question (unlocked with Konami code or typing "432")
+        const secretQuestion = {
+            id: 'secret',
+            text: 'Cosa sacrificheresti per l\'eccellenza?',
+            options: [
+                { text: 'Il mio tempo.', hz: 600, impact: 400 },
+                { text: 'Il profitto immediato.', hz: 700, impact: 500 },
+                { text: 'Tutto il superfluo.', hz: 999, impact: 799 }
+            ]
+        };
+        
+        // Timer
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+            const seconds = (elapsed % 60).toString().padStart(2, '0');
+            document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+        }
+        setInterval(updateTimer, 1000);
+        
+        // Update frequency meter
+        function updateMeter(hz) {
+            currentFrequency = hz;
+            const percentage = Math.min((hz / 1000) * 100, 100);
+            document.getElementById('meterFill').style.height = `${percentage}%`;
+            
+            // Animate number
+            const display = document.getElementById('hzValue');
+            let start = parseInt(display.textContent);
+            let end = hz;
+            let duration = 800;
+            let startTime = Date.now();
+            
+            function animate() {
+                let elapsed = Date.now() - startTime;
+                let progress = elapsed / duration;
+                
+                if (progress < 1) {
+                    let current = Math.floor(start + (end - start) * progress);
+                    display.textContent = current;
+                    requestAnimationFrame(animate);
+                } else {
+                    display.textContent = end;
+                }
+            }
+            animate();
+        }
+        
+        // Handle option selection
+        function setupQuestion(questionData) {
+            const container = document.getElementById('testContainer');
+            container.innerHTML = `
+                <div class="frequency-meter">
+                    <div class="meter-circle">
+                        <div class="meter-fill" id="meterFill" style="height: ${(currentFrequency / 1000) * 100}%"></div>
+                        <div class="frequency-display">
+                            <div class="hz-value" id="hzValue">${currentFrequency}</div>
+                            <div class="hz-label">Hz</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="question-container" style="opacity: 0">
+                    <div class="question-number">Domanda ${currentQuestion}/${totalQuestions}</div>
+                    <div class="question-text">${questionData.text}</div>
+                    <div class="response-grid">
+                        ${questionData.options.map((opt, i) => `
+                            <div class="response-option" data-hz="${opt.hz}" data-index="${i}">
+                                ${opt.text}
+                                <span class="frequency-impact ${opt.impact > 0 ? 'positive' : 'negative'}">
+                                    ${opt.impact > 0 ? '+' : ''}${opt.impact} Hz
+                                </span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            // Animate in
+            setTimeout(() => {
+                container.querySelector('.question-container').style.opacity = '1';
+            }, 100);
+            
+            // Add click handlers
+            container.querySelectorAll('.response-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const hz = parseInt(this.dataset.hz);
+                    const index = parseInt(this.dataset.index);
+                    
+                    // Visual feedback
+                    this.classList.add('selected');
+                    
+                    // Store answer
+                    answers.push({
+                        question: currentQuestion,
+                        hz: hz,
+                        choice: questionData.options[index].text
+                    });
+                    
+                    // Update frequency
+                    updateMeter(hz);
+                    
+                    // Update progress
+                    document.getElementById('progress').style.width = 
+                        `${(currentQuestion / totalQuestions) * 100}%`;
+                    
+                    // Next question or result
+                    setTimeout(() => {
+                        if (currentQuestion < totalQuestions) {
+                            currentQuestion++;
+                            setupQuestion(questions[currentQuestion - 1]);
+                        } else {
+                            showResult();
+                        }
+                    }, 800);
+                });
+            });
+        }
+        
+        // Show result
+        function showResult() {
+            const avgFrequency = Math.floor(
+                answers.reduce((sum, a) => sum + a.hz, 0) / answers.length
+            );
+            
+            const passed = avgFrequency >= 528;
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            
+            // Hide test container
+            document.getElementById('testContainer').style.display = 'none';
+            
+            // Show result
+            const resultContainer = document.getElementById('resultContainer');
+            resultContainer.className = 'result-container show';
+            
+            if (passed) {
+                resultContainer.innerHTML = `
+                    <h1 class="result-title approved">FREQUENZA ACCETTATA</h1>
+                    <div class="result-frequency">${avgFrequency} Hz</div>
+                    <p class="result-message">
+                        Vibri sopra la soglia minima.<br>
+                        Tempo: ${Math.floor(elapsed / 60)}:${(elapsed % 60).toString().padStart(2, '0')}<br>
+                        Velocità di decisione: ${elapsed < 60 ? 'Eccellente' : elapsed < 120 ? 'Buona' : 'Riflessiva'}
+                    </p>
+                    <a href="/calendario" class="result-action">
+                        PRENOTA IL TUO POSTO →
+                    </a>
+                    <p style="margin-top: 40px; font-size: 12px; opacity: 0.5;">
+                        Codice frequenza: ${btoa(avgFrequency + ':' + elapsed)}<br>
+                        Conservalo. Ti servirà.
+                    </p>
+                `;
+            } else {
+                resultContainer.innerHTML = `
+                    <h1 class="result-title rejected">FREQUENZA INSUFFICIENTE</h1>
+                    <div class="result-frequency">${avgFrequency} Hz</div>
+                    <p class="result-message">
+                        Sei sotto la soglia di 528 Hz.<br>
+                        Non possiamo lavorare insieme.<br>
+                        Non è personale. È fisica.
+                    </p>
+                    <div class="result-action rejected">
+                        ACCESSO NEGATO
+                    </div>
+                    <p style="margin-top: 40px; font-size: 12px; opacity: 0.5;">
+                        Puoi riprovare tra 30 giorni.<br>
+                        A volte le frequenze cambiano.
+                    </p>
+                `;
+                
+                // Log rejection
+                localStorage.setItem('ear_rejected', Date.now());
+                localStorage.setItem('ear_frequency', avgFrequency);
+            }
+        }
+        
+        // Secret unlock (typing "432")
+        let secretBuffer = '';
+        document.addEventListener('keypress', (e) => {
+            secretBuffer += e.key;
+            if (secretBuffer.includes('432')) {
+                // Show secret question
+                const unlockText = document.getElementById('unlockText');
+                if (unlockText) {
+                    unlockText.classList.add('show');
+                    setTimeout(() => {
+                        totalQuestions = 6;
+                        questions.push(secretQuestion);
+                        unlockText.textContent = 'Domanda segreta sbloccata...';
+                    }, 2000);
+                }
+                secretBuffer = '';
+            }
+            // Clear buffer after 2 seconds
+            setTimeout(() => { secretBuffer = ''; }, 2000);
+        });
+        
+        // Initialize
+        setupQuestion(questions[0]);
+    </script>
+</body>
+</html>
