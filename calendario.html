@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scegli il tuo mese - EAR</title>
+    <meta name="description" content="Hai superato il test. Ora scegli quando iniziare la risonanza.">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --black: #0a0a0a;
+            --white: #fafafa;
+            --accent: #d4af37;
+            --green: #00ff88;
+            --red: #ff4444;
+            --phi: 1.618;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--black);
+            color: var(--white);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Frequency Verification */
+        .frequency-badge {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid var(--green);
+            border-radius: 30px;
+            font-size: 14px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .frequency-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        /* Calendar Container */
+        .calendar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 120px 20px 60px;
+        }
+        
+        .page-title {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+        
+        .page-title h1 {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 20px;
+        }
+        
+        .page-title p {
+            font-size: 20px;
+            opacity: 0.7;
+        }
+        
+        /* Year Selector */
+        .year-selector {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+        
+        .year-tab {
+            padding: 12px 24px;
+            background: transparent;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: var(--white);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .year-tab.active {
+            background: var(--accent);
+            color: var(--black);
+            border-color: var(--accent);
+        }
+        
+        /* Calendar Grid */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 60px;
+        }
+        
+        .month-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            padding: 32px;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            overflow: hidden;
+        }
+        
+        .month-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .month-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .month-card.taken {
+            background: rgba(255, 68, 68, 0.05);
+            border-color: rgba(255, 68, 68, 0.2);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        
+        .month-card.taken::after {
+            content: 'OCCUPATO';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-15deg);
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--red);
+            letter-spacing: 0.1em;
+            opacity: 0.3;
+        }
+        
+        .month-card.selected {
+            background: var(--accent);
+            color: var(--black);
+            border-color: var(--accent);
+        }
+        
+        .month-card:hover:not(.taken) {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2);
+        }
+        
+        .month-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        
+        .month-name {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .month-number {
+            font-size: 36px;
+            font-weight: 100;
+            opacity: 0.3;
+        }
+        
+        .month-details {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(212, 175, 55, 0.1);
+        }
+        
+        .month-detail {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+            opacity: 0.7;
+        }
+        
+        .owner-name {
+            font-weight: 600;
+            color: var(--red);
+        }
+        
+        /* Booking Form */
+        .booking-form {
+            max-width: 600px;
+            margin: 80px auto;
+            padding: 40px;
+            background: rgba(212, 175, 55, 0.05);
+            border: 1px solid var(--accent);
+            display: none;
+        }
+        
+        .booking-form.show {
+            display: block;
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .form-title {
+            font-size: 28px;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: var(--white);
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: rgba(212, 175, 55, 0.05);
+        }
+        
+        .frequency-input {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.05em;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 20px;
+            background: var(--accent);
+            color: var(--black);
+            border: none;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+        }
+        
+        /* Scarcity Info */
+        .scarcity-info {
+            background: rgba(255, 68, 68, 0.05);
+            border: 1px solid rgba(255, 68, 68, 0.2);
+            padding: 20px;
+            margin: 60px auto;
+            max-width: 600px;
+            text-align: center;
+        }
+        
+        .scarcity-title {
+            color: var(--red);
+            font-size: 18px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        
+        .scarcity-text {
+            font-size: 14px;
+            opacity: 0.7;
+            line-height: 1.6;
+        }
+        
+        /* Price increase indicator */
+        .price-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            padding: 16px;
+            background: rgba(10, 10, 10, 0.95);
+            border: 1px solid var(--accent);
+            font-size: 12px;
+            z-index: 100;
+        }
+        
+        .current-price {
+            font-size: 24px;
+            color: var(--accent);
+            margin-bottom: 4px;
+        }
+        
+        .next-increase {
+            opacity: 0.5;
+        }
+        
+        /* Waiting List */
+        .waiting-list {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 300px;
+            background: rgba(10, 10, 10, 0.95);
+            border-left: 1px solid var(--accent);
+            padding: 20px;
+            z-index: 90;
+            transform: translateX(280px);
+            transition: transform 0.3s ease;
+        }
+        
+        .waiting-list:hover {
+            transform: translateX(0) translateY(-50%);
+        }
+        
+        .waiting-list::before {
+            content: 'LISTA ATTESA';
+            position: absolute;
+            left: -80px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            font-size: 12px;
+            letter-spacing: 0.2em;
+            color: var(--accent);
+        }
+        
+        .waiting-list h3 {
+            font-size: 16px;
+            margin-bottom: 16px;
+            color: var(--accent);
+        }
+        
+        .waiting-person {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .waiting-frequency {
+            color: var(--accent);
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Frequency Badge -->
+    <div class="frequency-badge" id="frequencyBadge">
+        <span>Verificato: <span id="userFrequency">0</span> Hz</span>
+    </div>
+    
+    <!-- Price Indicator -->
+    <div class="price-indicator">
+        <div class="current-price">€432/mese</div>
+        <div class="next-increase">+10% dopo 2 prenotazioni</div>
+    </div>
+    
+    <!-- Waiting List Drawer -->
+    <div class="waiting-list">
+        <h3>In attesa (37 persone)</h3>
+        <div class="waiting-person">
+            <span>M. Rossi</span>
+            <span class="waiting-frequency">612 Hz</span>
+        </div>
+        <div class="waiting-person">
+            <span>L. Bianchi</span>
+            <span class="waiting-frequency">589 Hz</span>
+        </div>
+        <div class="waiting-person">
+            <span>A. Verdi</span>
+            <span class="waiting-frequency">567 Hz</span>
+        </div>
+        <div class="waiting-person">
+            <span>G. Russo</span>
+            <span class="waiting-frequency">543 Hz</span>
+        </div>
+        <div class="waiting-person">
+            <span>F. Ferrari</span>
+            <span class="waiting-frequency">531 Hz</span>
+        </div>
+        <p style="margin-top: 16px; font-size: 12px; opacity: 0.5;">
+            Solo chi vibra più alto passa avanti
+        </p>
+    </div>
+    
+    <div class="calendar-container">
+        <!-- Page Title -->
+        <div class="page-title">
+            <h1>Scegli il tuo momento</h1>
+            <p>Ogni mese è un'opportunità unica. Non torna.</p>
+        </div>
+        
+        <!-- Year Selector -->
+        <div class="year-selector">
+            <button class="year-tab active" data-year="2025">2025</button>
+            <button class="year-tab" data-year="2026">2026</button>
+        </div>
+        
+        <!-- Calendar Grid 2025 -->
+        <div class="calendar-grid" id="calendar2025">
+            <div class="month-card taken" data-month="1">
+                <div class="month-header">
+                    <span class="month-name">Gennaio</span>
+                    <span class="month-number">01</span>
+                </div>
+                <div class="month-details">
+                    <div class="month-detail">
+                        <span>Status</span>
+                        <span class="owner-name">M. Santini</span>
+                    </div>
+                    <div class="month-detail">
+                        <span>Frequenza</span>
+                        <span>687 Hz</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="month-card taken" data-month="2">
+                <div class="month-header">
+                    <span class="month-name">Febbraio</span>
+                    <span class="month-number">02</span>
+                </div>
+                <div class="month-details">
+                    <div class="month-detail">
+                        <span>Status</span>
+                        <span class="owner-name">L. Romano</span>
+                    </div>
+                    <div class="month-detail">
+                        <span>Frequenza</span>
+                        <span>724 Hz</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="month-card taken" data-month="3">
+                <div class="month-header">
+                    <span class="month-name">Marzo</span>
+                    <span class="month-number">03</span>
+                </div>
+                <div class="month-details">
+                    <div class="month-detail">
+                        <span>Status</span>
+                        <span class="owner-name">A. Costa</span>
+                    </div>
+                    <div class="month-detail">
+                        <span>Frequenza</span>
+                        <span>891 Hz</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="month-card taken" data-month="4">
+                <div class="month-header">
+                    <span class="month-name">Aprile</span>
+                    <span class="month-number">04</span>
+                </div>
+                <div class="month-details">
+                    <div class="month-detail">
+                        <span>Status</span>
+                        <span class="owner-name">R. Moretti</span>
+                    </div>
+                    <div class="month-detail">
+                        <span>Frequenza</span>
+                        <span>632 Hz</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="month-card taken" data-month="5">
+                <div class="month-header">
+                    <span class="month-name">Maggio</span>
+                    <span class="month-number">05</span>
+                </div>
+                <div class="month-details">
+                    <div class="month-detail">
+                        <span>Status</span>
+                        <span class="owner-name">S. Fontana</span>
+                    </div>
+                    <div class="month-detail">
+                        <span>Frequenza</span>
+                        <span>756 Hz</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="month-card taken" data-month="6">
+                <div class="month-header">
+                    <span class="month-name">Giugno</span>
+                    <span class="month-number">06</span>
+                </div>
+                <div class="month-details">
+                    <div class="month-detail">
+                        <span>Status</span>
+                        <span class="owner-name">V. Gallo</span>
+                    </div>
+                    <div class="month-detail">
+                        <span>Frequenza</span>
+                        <span>598 Hz</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="month-card taken" data-month="7">
+                <div class="month-header">
+                    <span class="month-name">Luglio</span>
+                    <span class="month-number">07</span>
+                </div>
+                <div class="month-details">
+                    <div class="month-detail">
+                        <span>Status</span>
+                        <span class="owner-name">P. Conti</span>
+                    </div>
+                    <div class="month-detail">
+                        <span>Frequenza</span>
+                        <span>812 Hz</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="month-card taken" data-month="8">
+                <div class="month-header">
+                    <span class="month-name">Agosto</span>
+                    <span class="month-number">08</span>
+                </div>
+                <div class="month-details">
+                    <div class="month-detail">
+                        <span>Status</span>
+                        <span class="owner-name">E. De Luca</span>
+                    </div>
+                    <div class="month-detail">
+                        <span>Frequenza</span>
+                        <span>701 Hz</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="month-card" data-month="9">
+                <div class="month-header">
+                    <span class="month-name">Settembre</span>
+                    <span class="month-number">09</span>
+                </div>
+                <div class="month-details">
+                    <div class="month-detail">
+                        <span>Status</span>
+                        <span style="color: var(--green)">Disponibile</span>
+                    </div>
+                    <div class="month-detail">
+                        <span>Prezzo</span>
+                        <span>€432/mese</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="month-card" data-month="10">
+                <div class="month-header">
+                    <span class="month-name">Ottobre</span>
+                    <span class="month-number">10</span>
+                </div>
+                <div class="month-details">
+                    <div class="month-detail">
+                        <span>Status</span>
+                        <span style="color: var(--green)">Disponibile</span>
+                    </div>
+                    <div class="month-detail">
+                        <span>Prezzo</span>
+                        <span>€432/mese</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="month-card" data-month="11">
+                <div class="month-header">
+                    <span class="month-name">Novembre</span>
+                    <span class="month-number">11</span>
+                </div>
+                <div class="month-details">
+                    <div class="month-detail">
+                        <span>Status</span>
+                        <span style="color: var(--green)">Disponibile</span>
+                    </div>
+                    <div class="month-detail">
+                        <span>Prezzo</span>
+                        <span>€475/mese</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="month-card" data-month="12">
+                <div class="month-header">
+                    <span class="month-name">Dicembre</span>
+                    <span class="month-number">12</span>
+                </div>
+                <div class="month-details">
+                    <div class="month-detail">
+                        <span>Status</span>
+                        <span style="color: var(--green)">Disponibile</span>
+                    </div>
+                    <div class="month-detail">
+                        <span>Prezzo</span>
+                        <span>€475/mese</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Calendar Grid 2026 (hidden by default) -->
+        <div class="calendar-grid" id="calendar2026" style="display: none;">
+            <!-- Generate 2026 months dynamically -->
+        </div>
+        
+        <!-- Scarcity Info -->
+        <div class="scarcity-info">
+            <div class="scarcity-title">⚠️ Attenzione</div>
+            <div class="scarcity-text">
+                Ogni 3 prenotazioni il prezzo aumenta del 10%.<br>
+                Chi prenota prima paga meno. Per sempre.<br>
+                Non ci sono sconti. Non ci sono eccezioni.
+            </div>
+        </div>
+        
+        <!-- Booking Form (hidden initially) -->
+        <div class="booking-form" id="bookingForm">
+            <h2 class="form-title">Conferma Prenotazione</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Mese Selezionato</label>
+                <input type="text" class="form-input" id="selectedMonth" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Il tuo nome</label>
+                <input type="text" class="form-input" id="clientName" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="clientEmail" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Codice Frequenza (dal test)</label>
+                <input type="text" class="form-input frequency-input" id="frequencyCode" 
+                       placeholder="Es: NjUwOjg3" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Perché proprio questo mese?</label>
+                <textarea class="form-input" rows="3" id="reason" required></textarea>
+            </div>
+            
+            <button class="submit-btn" id="submitBooking">
+                BLOCCA IL MIO POSTO
+            </button>
+            
+            <p style="margin-top: 20px; font-size: 12px; opacity: 0.5; text-align: center;">
+                Riceverai conferma entro 4 ore lavorative (9-13).
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        // Check if user has passed the test
+        const storedFrequency = localStorage.getItem('ear_frequency');
+        const isRejected = localStorage.getItem('ear_rejected');
+        
+        if (!storedFrequency || parseInt(storedFrequency) < 528) {
+            // Redirect to test if not qualified
+            window.location.href = '/test';
+        } else {
+            // Display user frequency
+            document.getElementById('userFrequency').textContent = storedFrequency;
+        }
+        
+        // Year tab switching
+        const yearTabs = document.querySelectorAll('.year-tab');
+        yearTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Update active tab
+                yearTabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Show corresponding calendar
+                const year = this.dataset.year;
+                document.getElementById('calendar2025').style.display = 
+                    year === '2025' ? 'grid' : 'none';
+                document.getElementById('calendar2026').style.display = 
+                    year === '2026' ? 'grid' : 'none';
+                
+                // Generate 2026 if needed
+                if (year === '2026' && !document.getElementById('calendar2026').innerHTML) {
+                    generate2026Calendar();
+                }
+            });
+        });
+        
+        // Generate 2026 calendar
+        function generate2026Calendar() {
+            const months = [
+                'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
+                'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'
+            ];
+            
+            const calendar2026 = document.getElementById('calendar2026');
+            let html = '';
+            
+            months.forEach((month, index) => {
+                const price = 432 + Math.floor((index / 3)) * 43; // 10% increase every 3 months
+                html += `
+                    <div class="month-card" data-month="${index + 1}">
+                        <div class="month-header">
+                            <span class="month-name">${month}</span>
+                            <span class="month-number">${String(index + 1).padStart(2, '0')}</span>
+                        </div>
+                        <div class="month-details">
+                            <div class="month-detail">
+                                <span>Status</span>
+                                <span style="color: var(--green)">Disponibile</span>
+                            </div>
+                            <div class="month-detail">
+                                <span>Prezzo</span>
+                                <span>€${price}/mese</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            calendar2026.innerHTML = html;
+            
+            // Add click handlers to new cards
+            addCardClickHandlers();
+        }
+        
+        // Month selection
+        let selectedMonth = null;
+        
+        function addCardClickHandlers() {
+            const monthCards = document.querySelectorAll('.month-card:not(.taken)');
+            monthCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    // Remove previous selection
+                    monthCards.forEach(c => c.classList.remove('selected'));
+                    
+                    // Select this card
+                    this.classList.add('selected');
+                    selectedMonth = {
+                        name: this.querySelector('.month-name').textContent,
+                        number: this.querySelector('.month-number').textContent,
+                        year: document.querySelector('.year-tab.active').dataset.year
+                    };
+                    
+                    // Show booking form
+                    const form = document.getElementById('bookingForm');
+                    form.classList.add('show');
+                    document.getElementById('selectedMonth').value = 
+                        `${selectedMonth.name} ${selectedMonth.year}`;
+                    
+                    // Scroll to form
+                    form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                });
+            });
+        }
+        
+        addCardClickHandlers();
+        
+        // Form submission
+        document.getElementById('submitBooking').addEventListener('click', function() {
+            const name = document.getElementById('clientName').value;
+            const email = document.getElementById('clientEmail').value;
+            const code = document.getElementById('frequencyCode').value;
+            const reason = document.getElementById('reason').value;
+            
+            if (!name || !email || !code || !reason) {
+                alert('Compila tutti i campi. Ogni dettaglio conta.');
+                return;
+            }
+            
+            // Validate frequency code
+            try {
+                const decoded = atob(code);
+                const [freq, time] = decoded.split(':');
+                if (parseInt(freq) < 528) {
+                    alert('Codice frequenza non valido. Non puoi falsificare la risonanza.');
+                    return;
+                }
+            } catch {
+                alert('Codice frequenza corrotto. Rifai il test.');
+                return;
+            }
+            
+            // Success
+            this.textContent = 'PRENOTAZIONE INVIATA';
+            this.disabled = true;
+            
+            setTimeout(() => {
+                alert(`Posto bloccato per ${selectedMonth.name} ${selectedMonth.year}.\n\nRiceverai conferma via email.\n\nOra aspetta. La risonanza sta arrivando.`);
+                
+                // Update the card to show as taken
+                const card = document.querySelector('.month-card.selected');
+                card.classList.add('taken');
+                card.classList.remove('selected');
+                
+                // Hide form
+                document.getElementById('bookingForm').classList.remove('show');
+            }, 1500);
+        });
+        
+        // Live price updates
+        let bookingCount = 8;
+        setInterval(() => {
+            // Simulate someone booking
+            if (Math.random() > 0.95) {
+                bookingCount++;
+                const priceIncrease = Math.floor(bookingCount / 3) * 10;
+                const newPrice = 432 + (432 * priceIncrease / 100);
+                document.querySelector('.current-price').textContent = `€${newPrice}/mese`;
+                
+                // Flash the price
+                document.querySelector('.price-indicator').style.border = '2px solid var(--green)';
+                setTimeout(() => {
+                    document.querySelector('.price-indicator').style.border = '1px solid var(--accent)';
+                }, 500);
+            }
+        }, 10000);
+        
+        // Easter egg: Konami code unlocks all months
+        let konamiCode = [];
+        const konamiPattern = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 
+                              'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+        
+        document.addEventListener('keydown', (e) => {
+            konamiCode.push(e.key);
+            konamiCode = konamiCode.slice(-10);
+            
+            if (konamiCode.join(',') === konamiPattern.join(',')) {
+                document.querySelectorAll('.month-card.taken').forEach(card => {
+                    card.classList.remove('taken');
+                });
+                alert('Frequenza master attivata. Tutti i mesi sbloccati.');
+            }
+        });
+    </script>
+</body>
+                      </html>
