@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Il Manifesto del No - EAR</title>
+    <meta name="description" content="Non è importante chi siamo. È importante cosa rifiutiamo.">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --black: #0a0a0a;
+            --white: #fafafa;
+            --accent: #d4af37;
+            --red: #ff4444;
+            --phi: 1.618;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--white);
+            color: var(--black);
+            overflow-x: hidden;
+        }
+        
+        /* Inverted Design - White Background */
+        .manifesto-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 120px 20px 60px;
+        }
+        
+        /* Rejection Counter - Always Visible */
+        .rejection-ticker {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--red);
+            color: var(--white);
+            padding: 8px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            z-index: 1000;
+        }
+        
+        /* Title Section */
+        .manifesto-header {
+            text-align: center;
+            margin-bottom: 120px;
+        }
+        
+        .manifesto-title {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 100;
+            letter-spacing: -0.03em;
+            line-height: 0.9;
+            margin-bottom: 40px;
+        }
+        
+        .manifesto-title span {
+            display: block;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        
+        .manifesto-subtitle {
+            font-size: 20px;
+            opacity: 0.6;
+            max-width: 500px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        /* The NOs */
+        .no-section {
+            margin-bottom: 120px;
+        }
+        
+        .no-item {
+            padding: 40px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .no-item:hover {
+            padding-left: 20px;
+            border-color: var(--red);
+        }
+        
+        .no-number {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 72px;
+            font-weight: 100;
+            color: var(--red);
+            opacity: 0.1;
+        }
+        
+        .no-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--red);
+        }
+        
+        .no-description {
+            font-size: 16px;
+            line-height: 1.6;
+            opacity: 0.8;
+            max-width: 600px;
+        }
+        
+        /* The YESes (smaller section) */
+        .yes-section {
+            background: var(--black);
+            color: var(--white);
+            margin: 120px -20px 0;
+            padding: 80px 20px;
+        }
+        
+        .yes-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--accent);
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .yes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .yes-item {
+            text-align: center;
+        }
+        
+        .yes-number {
+            font-size: 48px;
+            font-weight: 100;
+            color: var(--accent);
+            margin-bottom: 12px;
+        }
+        
+        .yes-text {
+            font-size: 14px;
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+        
+        /* Philosophy Quote */
+        .philosophy-quote {
+            padding: 80px 20px;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.05) 0%, transparent 100%);
+            margin: 80px -20px;
+        }
+        
+        .quote-text {
+            font-size: 28px;
+            font-weight: 300;
+            line-height: 1.4;
+            max-width: 600px;
+            margin: 0 auto 20px;
+            font-style: italic;
+        }
+        
+        .quote-author {
+            font-size: 14px;
+            opacity: 0.5;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        
+        /* The Person (minimal) */
+        .person-section {
+            padding: 80px 0;
+            text-align: center;
+        }
+        
+        .person-name {
+            font-size: 48px;
+            font-weight: 100;
+            margin-bottom: 8px;
+        }
+        
+        .person-title {
+            font-size: 14px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 32px;
+        }
+        
+        .person-bio {
+            font-size: 18px;
+            line-height: 1.6;
+            max-width: 500px;
+            margin: 0 auto;
+            opacity: 0.8;
+        }
+        
+        /* Working Method */
+        .method-visual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            padding: 60px 0;
+            margin: 80px 0;
+        }
+        
+        .time-block {
+            text-align: center;
+        }
+        
+        .time-number {
+            font-size: 64px;
+            font-weight: 100;
+            color: var(--accent);
+        }
+        
+        .time-label {
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            opacity: 0.5;
+            margin-top: 8px;
+        }
+        
+        .time-separator {
+            font-size: 32px;
+            color: var(--accent);
+            opacity: 0.3;
+        }
+        
+        /* Footer CTA */
+        .manifesto-cta {
+            padding: 120px 20px;
+            text-align: center;
+            background: var(--black);
+            color: var(--white);
+            margin: 120px -20px 0;
+        }
+        
+        .cta-title {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+        
+        .cta-subtitle {
+            font-size: 20px;
+            opacity: 0.7;
+            margin-bottom: 40px;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            padding: 20px 40px;
+            background: var(--accent);
+            color: var(--black);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 16px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(212, 175, 55, 0.3);
+        }
+        
+        /* Live Rejection Feed */
+        .rejection-feed {
+            position: fixed;
+            left: 20px;
+            bottom: 20px;
+            width: 300px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid var(--red);
+            padding: 16px;
+            z-index: 100;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .feed-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--red);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 12px;
+        }
+        
+        .rejection-entry {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 68, 68, 0.2);
+            font-size: 13px;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        
+        .rejection-time {
+            font-size: 11px;
+            color: var(--red);
+            opacity: 0.5;
+        }
+        
+        /* Mobile */
+        @media (max-width: 768px) {
+            .rejection-feed {
+                display: none;
+            }
+            
+            .method-visual {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .no-number {
+                font-size: 48px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Rejection Ticker -->
+    <div class="rejection-ticker">
+        <span id="rejectionCount">1,247</span> progetti rifiutati dal 2025
+    </div>
+    
+    <!-- Live Rejection Feed -->
+    <div class="rejection-feed">
+        <div class="feed-title">Rifiuti in tempo reale</div>
+        <div id="rejectionFeed">
+            <!-- Dynamically filled -->
+        </div>
+    </div>
+    
+    <div class="manifesto-container">
+        <!-- Header -->
+        <div class="manifesto-header">
+            <h1 class="manifesto-title">
+                Non è chi siamo
+                <span>È cosa rifiutiamo</span>
+            </h1>
+            <p class="manifesto-subtitle">
+                Ogni NO che diciamo è un SÌ alla qualità.
+                Ogni cliente rifiutato è spazio per l'eccellenza.
+            </p>
+        </div>
+        
+        <!-- The NOs -->
+        <section class="no-section">
+            <div class="no-item">
+                <span class="no-number">01</span>
+                <h2 class="no-title">NO ai progetti "per ieri"</h2>
+                <p class="no-description">
+                    La fretta è il nemico della risonanza. Se hai bisogno di tutto subito, 
+                    hai bisogno di qualcun altro. Noi lavoriamo al ritmo della qualità, 
+                    non dell'ansia.
+                </p>
+            </div>
+            
+            <div class="no-item">
+                <span class="no-number">02</span>
+                <h2 class="no-title">NO ai budget "quanto costa?"</h2>
+                <p class="no-description">
+                    Se la prima domanda è il prezzo, la risposta è no. 
+                    Il valore non si negozia. Si riconosce o si ignora.
+                </p>
+            </div>
+            
+            <div class="no-item">
+                <span class="no-number">03</span>
+                <h2 class="no-title">NO alle revisioni infinite</h2>
+                <p class="no-description">
+                    "Proviamo in un altro modo" ripetuto 10 volte significa che 
+                    non sai cosa vuoi. Torna quando lo saprai.
+                </p>
+            </div>
+            
+            <div class="no-item">
+                <span class="no-number">04</span>
+                <h2 class="no-title">NO al "come lo fa la concorrenza"</h2>
+                <p class="no-description">
+                    Se vuoi essere come loro, vai da loro. 
+                    Noi creiamo identità uniche, non cloni.
+                </p>
+            </div>
+            
+            <div class="no-item">
+                <span class="no-number">05</span>
+                <h2 class="no-title">NO alle riunioni che potevano essere email</h2>
+                <p class="no-description">
+                    Il nostro tempo è scarso per scelta. 
+                    Una call di 2 ore per decidere un colore? No.
+                </p>
+            </div>
+            
+            <div class="no-item">
+                <span class="no-number">06</span>
+                <h2 class="no-title">NO ai comitati decisionali</h2>
+                <p class="no-description">
+                    Se servono 5 persone per approvare un font, 
+                    il problema non è il font.
+                </p>
+            </div>
+            
+            <div class="no-item">
+                <span class="no-number">07</span>
+                <h2 class="no-title">NO al growth hacking</h2>
+                <p class="no-description">
+                    I trucchi funzionano per un giorno. 
+                    La sostanza funziona per sempre.
+                </p>
+            </div>
+            
+            <div class="no-item">
+                <span class="no-number">08</span>
+                <h2 class="no-title">NO ai KPI senza senso</h2>
+                <p class="no-description">
+                    "Voglio 10.000 follower" non è un obiettivo. 
+                    È un numero senza anima.
+                </p>
+            </div>
+            
+            <div class="no-item">
+                <span class="no-number">09</span>
+                <h2 class="no-title">NO al "target 18-65 anni"</h2>
+                <p class="no-description">
+                    Parlare a tutti significa non dire niente a nessuno. 
+                    Scegli la tua tribù o resta nel rumore.
+                </p>
+            </div>
+            
+            <div class="no-item">
+                <span class="no-number">10</span>
+                <h2 class="no-title">NO al "più funzionalità = meglio"</h2>
+                <p class="no-description">
+                    L'eccellenza non è aggiungere finché non c'è più niente da aggiungere. 
+                    È togliere finché non c'è più niente da togliere.
+                </p>
+            </div>
+        </section>
+        
+        <!-- Philosophy Quote -->
+        <div class="philosophy-quote">
+            <p class="quote-text">
+                "Il prezzo è quello che paghi.<br>
+                Il valore è quello che ottieni.<br>
+                La differenza è quello che capiamo noi."
+            </p>
+            <p class="quote-author">Filosofia EAR</p>
+        </div>
+        
+        <!-- The YESes -->
+        <section class="yes-section">
+            <h2 class="yes-title">I nostri unici SÌ</h2>
+            <div class="yes-grid">
+                <div class="yes-item">
+                    <div class="yes-number">12</div>
+                    <div class="yes-text">Progetti all'anno<br>Non uno di più</div>
+                </div>
+                <div class="yes-item">
+                    <div class="yes-number">4</div>
+                    <div class="yes-text">Ore al giorno<br>9:00 - 13:00</div>
+                </div>
+                <div class="yes-item">
+                    <div class="yes-number">1</div>
+                    <div class="yes-text">Cliente alla volta<br>Focus totale</div>
+                </div>
+                <div class="yes-item">
+                    <div class="yes-number">∞</div>
+                    <div class="yes-text">Revisioni di qualità<br>Mai di indecisione</div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Working Method Visual -->
+        <div class="method-visual">
+            <div class="time-block">
+                <div class="time-number">25</div>
+                <div class="time-label">Giorni medi<br>per progetto</div>
+            </div>
+            <div class="time-separator">×</div>
+            <div class="time-block">
+                <div class="time-number">12</div>
+                <div class="time-label">Progetti<br>all'anno</div>
+            </div>
+            <div class="time-separator">=</div>
+            <div class="time-block">
+                <div class="time-number">300</div>
+                <div class="time-label">Giorni<br>di eccellenza</div>
+            </div>
+        </div>
+        
+        <!-- The Person -->
+        <section class="person-section">
+            <h2 class="person-name">Alessandro Ray</h2>
+            <p class="person-title">L'unico che tocca il tuo progetto</p>
+            <p class="person-bio">
+                Non ho un team. Non delego. Non scalo.<br>
+                Ogni pixel, ogni parola, ogni scelta passa da me.<br>
+                Per questo posso dire NO a quasi tutti<br>
+                e SÌ solo a chi vibra alla frequenza giusta.
+            </p>
+        </section>
+    </div>
+    
+    <!-- CTA Footer -->
+    <section class="manifesto-cta">
+        <h2 class="cta-title">Pensi di essere diverso?</h2>
+        <p class="cta-subtitle">
+            Il 92% non passa il test. Tu?
+        </p>
+        <a href="/test" class="cta-button">
+            PROVA LA TUA FREQUENZA
+        </a>
+    </section>
+    
+    <script>
+        // Update rejection counter
+        let rejectionCount = 1247;
+        setInterval(() => {
+            rejectionCount += Math.floor(Math.random() * 3);
+            document.getElementById('rejectionCount').textContent = 
+                rejectionCount.toLocaleString('it-IT');
+        }, 30000);
+        
+        // Live rejection feed
+        const rejectionReasons = [
+            "Budget insufficiente",
+            "Troppa fretta",
+            "Vuole essere come Amazon",
+            "Ha detto 'viral'",
+            "5 persone nel comitato",
+            "Target: tutti",
+            "Vuole 50 funzionalità",
+            "Prima domanda: quanto costa?",
+            "Ha usato Comic Sans nella presentazione",
+            "Meeting di 3 ore per decidere un logo",
+            "Vuole 'qualcosa di moderno ma classico'",
+            "Revisione numero 17",
+            "Non sa cosa vuole",
+            "Sa troppo bene cosa vuole (ed è sbagliato)",
+            "Ha chiesto uno sconto"
+        ];
+        
+        const names = [
+            "M. R.", "L. B.", "G. V.", "A. C.", "F. P.", 
+            "S. M.", "R. T.", "E. D.", "P. N.", "C. L."
+        ];
+        
+        function addRejection() {
+            const feed = document.getElementById('rejectionFeed');
+            const reason = rejectionReasons[Math.floor(Math.random() * rejectionReasons.length)];
+            const name = names[Math.floor(Math.random() * names.length)];
+            const time = new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+            
+            const entry = document.createElement('div');
+            entry.className = 'rejection-entry';
+            entry.innerHTML = `
+                <strong>${name}</strong> - ${reason}
+                <div class="rejection-time">${time}</div>
+            `;
+            
+            feed.insertBefore(entry, feed.firstChild);
+            
+            // Keep only last 5
+            while (feed.children.length > 5) {
+                feed.removeChild(feed.lastChild);
+            }
+        }
+        
+        // Add initial rejections
+        for (let i = 0; i < 3; i++) {
+            setTimeout(() => addRejection(), i * 1000);
+        }
+        
+        // Add new rejection every 15-45 seconds
+        setInterval(() => {
+            if (Math.random() > 0.5) {
+                addRejection();
+            }
+        }, 20000);
+        
+        // Easter egg: Clicking on NO items reveals specific examples
+        document.querySelectorAll('.no-item').forEach((item, index) => {
+            item.addEventListener('dblclick', () => {
+                const examples = [
+                    "Ultimo rifiutato: CEO che voleva 'il sito pronto per lunedì' (era venerdì)",
+                    "Ultimo rifiutato: Startup che offriva equity invece di soldi",
+                    "Ultimo rifiutato: Azienda con 47 slide di 'feedback'",
+                    "Ultimo rifiutato: 'Vogliamo essere gli Uber del...'",
+                    "Ultimo rifiutato: 12 call per decidere se usare il blu o l'azzurro",
+                    "Ultimo rifiutato: CMO + CEO + CFO + COO + CTO nella chat",
+                    "Ultimo rifiutato: 'Fai diventare virale questo PDF'",
+                    "Ultimo rifiutato: KPI = 'Battere Apple'",
+                    "Ultimo rifiutato: 'Il nostro target? Chiunque respiri'",
+                    "Ultimo rifiutato: Voleva un chatbot, calendario, shop, blog, forum, tutto"
+                ];
+                alert(examples[index]);
+            });
+        });
+    </script>
+</body>
+</html>
