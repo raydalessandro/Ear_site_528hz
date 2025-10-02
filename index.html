@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EAR - Solo 12 frequenze all'anno</title>
+    <meta name="description" content="Accettiamo solo 12 progetti all'anno. Attualmente: 8/12 occupati.">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --black: #0a0a0a;
+            --white: #fafafa;
+            --accent: #d4af37;
+            --phi: 1.618;
+            --spacing: calc(1rem * var(--phi));
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--black);
+            color: var(--white);
+            overflow-x: hidden;
+            line-height: var(--phi);
+        }
+        
+        /* Scarcity Indicator - SEMPRE VISIBILE */
+        .scarcity-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--accent);
+            color: var(--black);
+            padding: 12px;
+            text-align: center;
+            font-weight: 600;
+            z-index: 1000;
+            font-size: 14px;
+            letter-spacing: 0.05em;
+        }
+        
+        .slots-counter {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .slot-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--black);
+        }
+        
+        .slot-dot.empty {
+            background: transparent;
+            border: 1px solid var(--black);
+        }
+        
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 48px;
+            left: 0;
+            right: 0;
+            padding: 20px 40px;
+            background: rgba(10,10,10,0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(212,175,55,0.1);
+            z-index: 999;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--white);
+        }
+        
+        .logo svg {
+            width: 32px;
+            height: 32px;
+        }
+        
+        .logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        
+        .nav-links {
+            display: none; /* Nascosti - scarsità anche nella navigazione */
+        }
+        
+        .availability-status {
+            padding: 8px 16px;
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+        }
+        
+        /* Hero - Scarsità Immediata */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing);
+            margin-top: 100px;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 700;
+            line-height: 0.9;
+            letter-spacing: -0.03em;
+            margin-bottom: calc(var(--spacing) * 2);
+        }
+        
+        .price-display {
+            font-size: clamp(2rem, 5vw, 4rem);
+            color: var(--accent);
+            margin: calc(var(--spacing) * 2) 0;
+            font-weight: 300;
+        }
+        
+        .frequency-value {
+            font-size: 6rem;
+            font-weight: 100;
+            opacity: 0.3;
+            letter-spacing: -0.05em;
+        }
+        
+        /* The Canvas - Più visibile */
+        #resonance-field {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.2; /* Alzato come richiesto */
+        }
+        
+        /* Availability Grid - Visual Scarcity */
+        .availability-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 600px;
+            margin: calc(var(--spacing) * 3) auto;
+            padding: 0 20px;
+        }
+        
+        .month-slot {
+            aspect-ratio: 1;
+            border: 2px solid rgba(212,175,55,0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .month-slot.taken {
+            background: var(--accent);
+            border-color: var(--accent);
+            pointer-events: none;
+        }
+        
+        .month-slot.taken::after {
+            content: 'OCCUPATO';
+            position: absolute;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: var(--black);
+        }
+        
+        .month-slot.available {
+            cursor: pointer;
+            border-color: var(--accent);
+        }
+        
+        .month-slot.available:hover {
+            background: rgba(212,175,55,0.1);
+            transform: scale(1.05);
+        }
+        
+        .month-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .slot-number {
+            font-size: 24px;
+            font-weight: 100;
+            opacity: 0.5;
+        }
+        
+        /* Single Service - Ultimate Scarcity */
+        .service-section {
+            padding: calc(var(--spacing) * 4) 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .single-service {
+            border: 2px solid var(--accent);
+            padding: calc(var(--spacing) * 2);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .single-service::before {
+            content: 'SOLO 12 ALL\'ANNO';
+            position: absolute;
+            top: 10px;
+            right: -40px;
+            background: var(--accent);
+            color: var(--black);
+            padding: 4px 40px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            transform: rotate(45deg);
+        }
+        
+        .service-title {
+            font-size: 2rem;
+            margin-bottom: var(--spacing);
+        }
+        
+        .service-price {
+            font-size: 3rem;
+            color: var(--accent);
+            font-weight: 300;
+            margin: var(--spacing) 0;
+        }
+        
+        .service-price small {
+            font-size: 1rem;
+            opacity: 0.7;
+        }
+        
+        /* Rejection Counter - Anti-Social Proof */
+        .rejection-counter {
+            background: rgba(255,0,0,0.1);
+            border: 1px solid rgba(255,0,0,0.3);
+            padding: var(--spacing);
+            margin: calc(var(--spacing) * 2) auto;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        .rejection-number {
+            font-size: 3rem;
+            color: #ff4444;
+            font-weight: 100;
+        }
+        
+        .rejection-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            opacity: 0.7;
+        }
+        
+        /* Working Hours - Scarcity of Time */
+        .working-hours {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--black);
+            border: 1px solid var(--accent);
+            padding: 16px;
+            font-size: 12px;
+            z-index: 100;
+        }
+        
+        .hours-title {
+            color: var(--accent);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .hours-time {
+            font-family: 'Courier New', monospace;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-left: 8px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .status-indicator.online {
+            background: #00ff00;
+        }
+        
+        .status-indicator.offline {
+            background: #ff0000;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            padding: calc(var(--spacing) * 4) 40px;
+            text-align: center;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            padding: 20px 40px;
+            background: var(--accent);
+            color: var(--black);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 18px;
+            letter-spacing: 0.05em;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(212,175,55,0.3);
+        }
+        
+        .cta-button.disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+            opacity: 0.3;
+        }
+        
+        /* Next Available Date */
+        .next-available {
+            margin-top: var(--spacing);
+            font-size: 14px;
+            opacity: 0.7;
+        }
+        
+        .countdown {
+            font-family: 'Courier New', monospace;
+            color: var(--accent);
+            font-size: 16px;
+            margin-top: 8px;
+        }
+        
+        /* Footer Minimal */
+        footer {
+            padding: calc(var(--spacing) * 2) 40px;
+            text-align: center;
+            border-top: 1px solid rgba(212,175,55,0.1);
+            margin-top: calc(var(--spacing) * 4);
+        }
+        
+        .footer-text {
+            font-size: 12px;
+            opacity: 0.5;
+            margin-bottom: 8px;
+        }
+        
+        .frequency-signature {
+            font-family: 'Courier New', monospace;
+            color: var(--accent);
+            font-size: 10px;
+            opacity: 0.3;
+        }
+        
+        /* Mobile */
+        @media (max-width: 768px) {
+            .availability-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .working-hours {
+                display: none;
+            }
+            
+            .hero {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Scarcity Indicator - SEMPRE IN CIMA -->
+    <div class="scarcity-bar">
+        <div class="slots-counter">
+            <span>2025:</span>
+            <span class="slot-dot"></span>
+            <span class="slot-dot"></span>
+            <span class="slot-dot"></span>
+            <span class="slot-dot"></span>
+            <span class="slot-dot"></span>
+            <span class="slot-dot"></span>
+            <span class="slot-dot"></span>
+            <span class="slot-dot"></span>
+            <span class="slot-dot empty"></span>
+            <span class="slot-dot empty"></span>
+            <span class="slot-dot empty"></span>
+            <span class="slot-dot empty"></span>
+            <span>8/12 OCCUPATI</span>
+        </div>
+    </div>
+    
+    <!-- Navigation Minimal -->
+    <nav>
+        <a href="/" class="logo">
+            <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16 16 Q16 14, 14 14 T10 14 Q10 18, 14 18 T22 18 Q22 10, 14 10 T6 10 Q6 22, 18 22 T30 22 Q30 6, 14 6" 
+                      stroke="#d4af37" stroke-width="1.5" fill="none" opacity="0.8"/>
+            </svg>
+            <span class="logo-text">EAR</span>
+        </a>
+        
+        <div class="availability-status" id="availabilityStatus">
+            OFFLINE
+        </div>
+    </nav>
+    
+    <!-- Resonance Field Canvas -->
+    <canvas id="resonance-field"></canvas>
+    
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="frequency-value">432</div>
+            <h1>Solo 12 frequenze<br>all'anno</h1>
+            <p style="font-size: 1.5rem; opacity: 0.7; margin: 40px 0;">
+                Non lavoriamo con tutti.<br>
+                Solo con chi vibra sopra i 528 Hz.
+            </p>
+            <div class="price-display">
+                €432/mese
+                <br>
+                <span style="font-size: 1rem; opacity: 0.5;">o €4.320 progetto singolo</span>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Visual Availability -->
+    <section class="availability-grid">
+        <div class="month-slot taken">
+            <span class="month-name">GEN</span>
+            <span class="slot-number">1</span>
+        </div>
+        <div class="month-slot taken">
+            <span class="month-name">FEB</span>
+            <span class="slot-number">2</span>
+        </div>
+        <div class="month-slot taken">
+            <span class="month-name">MAR</span>
+            <span class="slot-number">3</span>
+        </div>
+        <div class="month-slot taken">
+            <span class="month-name">APR</span>
+            <span class="slot-number">4</span>
+        </div>
+        <div class="month-slot taken">
+            <span class="month-name">MAG</span>
+            <span class="slot-number">5</span>
+        </div>
+        <div class="month-slot taken">
+            <span class="month-name">GIU</span>
+            <span class="slot-number">6</span>
+        </div>
+        <div class="month-slot taken">
+            <span class="month-name">LUG</span>
+            <span class="slot-number">7</span>
+        </div>
+        <div class="month-slot taken">
+            <span class="month-name">AGO</span>
+            <span class="slot-number">8</span>
+        </div>
+        <div class="month-slot available">
+            <span class="month-name">SET</span>
+            <span class="slot-number">9</span>
+        </div>
+        <div class="month-slot available">
+            <span class="month-name">OTT</span>
+            <span class="slot-number">10</span>
+        </div>
+        <div class="month-slot available">
+            <span class="month-name">NOV</span>
+            <span class="slot-number">11</span>
+        </div>
+        <div class="month-slot available">
+            <span class="month-name">DIC</span>
+            <span class="slot-number">12</span>
+        </div>
+    </section>
+    
+    <!-- Single Service -->
+    <section class="service-section">
+        <div class="single-service">
+            <h2 class="service-title">Risonanza Completa</h2>
+            <p style="opacity: 0.8; margin-bottom: 30px;">
+                Un solo servizio. Fatto perfettamente.<br>
+                Dal silenzio alla risonanza in 30 giorni.
+            </p>
+            <div class="service-price">
+                €432 <small>/mese</small>
+            </div>
+            <p style="font-size: 14px; opacity: 0.6;">
+                Include: Sito 100/100 Lighthouse • 2 articoli/mese • Modifiche illimitate<br>
+                Non include: Compromessi • Scorciatoie • Rumore
+            </p>
+        </div>
+    </section>
+    
+    <!-- Rejection Counter -->
+    <div class="rejection-counter">
+        <div class="rejection-number">23</div>
+        <div class="rejection-label">Progetti rifiutati questo mese</div>
+        <p style="font-size: 12px; margin-top: 10px; opacity: 0.5;">
+            Non tutti vibrano alla frequenza giusta
+        </p>
+    </div>
+    
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <h2 style="font-size: 2.5rem; margin-bottom: 40px;">
+            Vuoi il posto 9?
+        </h2>
+        <a href="#test" class="cta-button" id="ctaButton">
+            INIZIA IL TEST DI RISONANZA
+        </a>
+        <div class="next-available">
+            Prossima disponibilità: Settembre 2025
+            <div class="countdown" id="countdown">
+                245 giorni : 14 ore : 32 minuti
+            </div>
+        </div>
+    </section>
+    
+    <!-- Working Hours Indicator -->
+    <div class="working-hours">
+        <div class="hours-title">
+            ORE DI RISONANZA
+            <span class="status-indicator offline" id="statusIndicator"></span>
+        </div>
+        <div class="hours-time">09:00 - 13:00 CET</div>
+        <div style="margin-top: 8px; font-size: 10px; opacity: 0.5;">
+            Lun - Ven
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="footer-text">
+            Alessandro Ray lavora personalmente su ogni progetto
+        </div>
+        <div class="footer-text">
+            Non deleghiamo. Non scaliamo. Non compromettiamo.
+        </div>
+        <div class="frequency-signature">
+            // 432 Hz // φ = 1.618 // ∞
+        </div>
+    </footer>
+    
+    <script>
+        // Resonance Field with Higher Opacity
+        const canvas = document.getElementById('resonance-field');
+        const ctx = canvas.getContext('2d');
+        let time = 0;
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        function drawResonance() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#d4af37';
+            ctx.lineWidth = 0.5;
+            
+            const resolution = 40;
+            const cellSize = Math.max(canvas.width, canvas.height) / resolution;
+            
+            for (let i = 0; i < resolution; i++) {
+                for (let j = 0; j < resolution; j++) {
+                    const x = i / resolution;
+                    const y = j / resolution;
+                    
+                    let pattern = Math.sin((x * 1.618 + time) * Math.PI * 2) * 
+                                 Math.cos((y * 1.618 + time * 0.7) * Math.PI * 2);
+                    
+                    if (Math.abs(pattern) > 0.5) {
+                        ctx.beginPath();
+                        ctx.arc(
+                            i * cellSize,
+                            j * cellSize,
+                            Math.abs(pattern) * cellSize * 0.2,
+                            0,
+                            Math.PI * 2
+                        );
+                        ctx.stroke();
+                    }
+                }
+            }
+            
+            // Fixed opacity - no breathing below threshold
+            canvas.style.opacity = 0.2 + Math.sin(time * Math.PI / 4) * 0.05;
+            
+            time += 0.016;
+            requestAnimationFrame(drawResonance);
+        }
+        drawResonance();
+        
+        // Working Hours Check
+        function checkWorkingHours() {
+            const now = new Date();
+            const hours = now.getHours();
+            const day = now.getDay();
+            
+            const isWorkingTime = day >= 1 && day <= 5 && hours >= 9 && hours < 13;
+            
+            const status = document.getElementById('availabilityStatus');
+            const indicator = document.getElementById('statusIndicator');
+            
+            if (isWorkingTime) {
+                status.textContent = 'ONLINE ORA';
+                status.style.color = '#00ff00';
+                indicator.classList.remove('offline');
+                indicator.classList.add('online');
+            } else {
+                status.textContent = 'OFFLINE';
+                status.style.color = '#ff0000';
+                indicator.classList.remove('online');
+                indicator.classList.add('offline');
+            }
+        }
+        
+        checkWorkingHours();
+        setInterval(checkWorkingHours, 60000); // Check every minute
+        
+        // Countdown Timer
+        function updateCountdown() {
+            const target = new Date('2025-09-01T09:00:00');
+            const now = new Date();
+            const diff = target - now;
+            
+            if (diff > 0) {
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                
+                document.getElementById('countdown').textContent = 
+                    `${days} giorni : ${hours} ore : ${minutes} minuti`;
+            }
+        }
+        
+        updateCountdown();
+        setInterval(updateCountdown, 60000);
+        
+        // Click handlers for available slots
+        document.querySelectorAll('.month-slot.available').forEach(slot => {
+            slot.addEventListener('click', () => {
+                const month = slot.querySelector('.month-name').textContent;
+                alert(`Il posto di ${month} 2025 richiede il test di risonanza. Solo se vibri sopra 528 Hz.`);
+            });
+        });
+        
+        // Scarcity psychology - random rejection count update
+        setInterval(() => {
+            const rejectionNumber = document.querySelector('.rejection-number');
+            const current = parseInt(rejectionNumber.textContent);
+            rejectionNumber.textContent = current + Math.floor(Math.random() * 2);
+        }, 30000); // Every 30 seconds someone gets rejected
+    </script>
+</body>
+          </html>
